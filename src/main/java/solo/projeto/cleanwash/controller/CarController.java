@@ -18,7 +18,7 @@ import java.util.Optional;
 
 public class CarController {
 
-    private CarServices service;
+    public CarServices service;
 
         @Autowired
         public void setService(CarServices service){
