@@ -3,6 +3,7 @@ package solo.projeto.cleanwash.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -11,13 +12,9 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Data
 @Entity
-@Table (name = "telephoneTB")
+@Accessors(chain = true)
 public class Telefone implements Serializable {
     @Id
-    String clientNumber;
+    String numeroCliente;
 
-    @OneToOne (mappedBy = "telephoneTB")
-    @MapsId
-    @JoinColumn (name = "idCliente")
-    private Cliente client;
 }

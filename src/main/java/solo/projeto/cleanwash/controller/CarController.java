@@ -1,47 +1,70 @@
 package solo.projeto.cleanwash.controller;
 
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.servlet.ModelAndView;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import solo.projeto.cleanwash.model.Carro;
 import solo.projeto.cleanwash.services.CarServices;
 
-import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.Optional;
 
+
+@RestController
+@CrossOrigin(origins = "http://localhost:3000/", exposedHeaders = "X-Total-Count")
+@RequestMapping("/carro")
 
 public class CarController {
-    CarServices services;
 
-    //ROTA LISTAR CARROS
-    @RequestMapping(value = { "/listcar" }, method = RequestMethod.GET)
-    public String getHome(Model model, HttpServletResponse response) {
+    private CarServices service;
 
-        var listCar = services.findAll();
-        model.addAttribute("listcar", listCar);
-        return "index";
-    }
-    //ROTA CADASTRAR CARRO
-    @RequestMapping("/carrocadastrar")
-    public String getFormCadastrar(Model model) {
-        Carro carro = new Carro();
-        model.addAttribute("car", carro);
-        return "carrocadastrar";
-    }
-    //ROTA EDITAR CARRO
-    @RequestMapping("/carroeditar/{idCar}")
-    public ModelAndView getFormEditar(@PathVariable(name = "idCar") Long idCar) {
-        ModelAndView modelAndView = new ModelAndView("editar");
-        Carro carro = services.findById(idCar);
-        modelAndView.addObject("car", carro);
-        return modelAndView;
-    }
-    //ROTA DELETAR CARRO
-    @RequestMapping("/carrodeletar/{idCar}")
-    public String doDelete(@PathVariable(name = "idCar") Long idCar) {
-        services.delete(idCar);
-        return "redirect:/";
+        @Autowired
+        public void setService(CarServices service){
+            this.service = service;
+        }
+
+        @GetMapping
+        public List<Carro> getAllCar() {
+            return service.getAllCar();
+        }
+
+        @GetMapping(value = "/{id}")
+        public ResponseEntity<Carro> getCarUnique(@PathVariable Long id) {
+            Optional<Carro> a = service.getCarById(id);
+            if (a.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            } else {
+                return ResponseEntity.ok().body(a.get());
+            }
+        }
+
+        @PostMapping
+        public Carro newCarro(@RequestBody Carro carro) {
+            return service.insert(carro);
+        }
+
+        @PutMapping(value = "/{id}")
+        public ResponseEntity<?> updateCarro(@PathVariable Long id, @RequestBody Carro a) {
+            return service.getCarById(id).map(record -> {
+                if (record.getId().equals(a.getId())) {
+                    service.update(a);
+                    return ResponseEntity.ok(a);
+                } else {
+                    return ResponseEntity.notFound().build();
+                }
+            }).orElse(ResponseEntity.notFound().build());
+        }
+
+        @DeleteMapping(path = "/{id}")
+        public ResponseEntity<?> deleteCarro(@PathVariable Long id, Carro a){
+            return service.getCarById(id)
+                    .map( record -> {
+                        service.delete(record.getId());
+                        return ResponseEntity.ok(a);
+                    }).orElse(ResponseEntity.notFound().build());
+        }
+
     }
 
-}
